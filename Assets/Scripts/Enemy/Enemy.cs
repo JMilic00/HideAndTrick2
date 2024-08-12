@@ -1,8 +1,9 @@
 using System.Collections;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.AI;
 
-public class Enemy : PoolableObject, IDamageable
+public class Enemy : PoolableObject, IDamageable, ITriggerCheckable
 {
     public AttackRadius AttackRadius;
     public Animator Animator;
@@ -13,17 +14,56 @@ public class Enemy : PoolableObject, IDamageable
     private Coroutine LookCoroutine;
     private const string ATTACK_TRIGGER = "Attack";
 
+    public EnemyStateMachine StateMachine { get; set; }
+    public EnemyPatrolState PatrolState { get; set; }
+    public EnemyChaseState ChaseState { get; set; }
+    public EnemyAttackState AttackState { get; set; }
+    public bool IsAggroed { get; set; }
+    public bool IsWithinStrikingDistance { get; set; }
+
     private void Awake()
     {
+        if (Movement != null)
+        {
+            Debug.LogError("usao u movement ");
+            Movement.SetEnemyContext(this);
+        }
+        if(AttackRadius != null && Movement != null)
+        {
+            Debug.LogError("EnemyMovement or AttackRadius is not assigned on " + gameObject.name);
+        }
+
         if (AttackRadius != null)
         {
+            Debug.LogError("usao u attack ");
+            AttackRadius.SetEnemyContext(this);
             AttackRadius.OnAttack += OnAttack;
         }
         else
         {
             Debug.LogError("AttackRadius is not assigned on " + gameObject.name);
         }
-        //here I encoutered some problems with NullReferenceException: Object reference not set to an instance of an object
+
+        StateMachine = new EnemyStateMachine();
+
+        PatrolState = new EnemyPatrolState(this, StateMachine);
+        ChaseState = new EnemyChaseState(this, StateMachine);
+        AttackState = new EnemyAttackState(this, StateMachine);
+    }
+
+    private void Start()
+    {
+        StateMachine.initialize(PatrolState);
+    }
+
+    private void Update()
+    {
+        StateMachine.CurrentEnemyState.UpdateLogic();
+    }
+
+    private void FixedUpdate()
+    {
+        StateMachine.CurrentEnemyState.UpdatePhysics();
     }
 
     private void OnAttack(IDamageable Target)
@@ -65,6 +105,7 @@ public class Enemy : PoolableObject, IDamageable
     public void TakeDamage(int Damage)
     {
         Health -= Damage;
+        Debug.Log("ENEMY TOOK DAMAGE: " + Damage + ", REMAINING HEALTH: " + Health);
 
         if (Health <= 0)
         {
@@ -75,5 +116,15 @@ public class Enemy : PoolableObject, IDamageable
     public Transform GetTransform()
     {
         return transform;
+    }
+
+    public void SetAggroedStatus(bool isAggroed)
+    {
+        IsAggroed = isAggroed;
+    }
+
+    public void SetStrikingDistanceBool(bool isStrikingDistance)
+    {
+        IsWithinStrikingDistance = isStrikingDistance;
     }
 }

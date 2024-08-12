@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Damage: 5
   AttackRadius: 1.5
-  AttackDelay: 1.5
+  AttackDelay: 0.75
   LineOfSightLayers:
     serializedVersion: 2
     m_Bits: 65

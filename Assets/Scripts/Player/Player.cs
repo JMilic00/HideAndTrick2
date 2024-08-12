@@ -50,6 +50,7 @@ public class Player : MonoBehaviour, IDamageable
     public void TakeDamage(int Damage)
     {
         Health -= Damage;
+        Debug.Log("Player took damage: " + Damage + ", remaining health: " + Health);
 
         if (Health <= 0)
         {

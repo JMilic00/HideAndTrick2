@@ -1,31 +1,43 @@
 using System.Collections;
-using TMPro;
+using System.Runtime.InteropServices.WindowsRuntime;
 using UnityEngine;
 
 [RequireComponent(typeof(SphereCollider))]
 public class EnemyLineOfSightChecker : MonoBehaviour
 {
     public SphereCollider Collider;
-    public float FieldOfView = 90f;
+    public float FieldOfView = 90f; // Field of view in degrees
     public LayerMask LineOfSightLayers;
-
-    public delegate void GainSightEvent(Player player);
-    public GainSightEvent OnGainSight;
-    public delegate void LoseSightEvent(Player player);
-    public LoseSightEvent OnLoseSight;
-
     private Coroutine CheckForLineOfSightCoroutine;
-
+    private Enemy _enemy;
+    public void SetEnemyContext(Enemy enemy)
+    {
+        _enemy = enemy;
+        if ( _enemy != null)
+        {
+            Debug.Log("kontekst je u lineu ");
+        }
+        else
+        {
+            Debug.LogError("LineOfSightChecker is not assigned on " + gameObject.name);
+        }
+    }
     private void Awake()
     {
         Collider = GetComponent<SphereCollider>();
     }
 
-    private void OnTriggerEnter(Collider other)
+
+    public void OnTriggerEnter(Collider other)
     {
-        Player player;
-        if (other.TryGetComponent<Player>(out player))
+        if (_enemy == null)
         {
+            Debug.LogError("Enemy context is not set for " + gameObject.name);
+            return;
+        }
+        if (other.TryGetComponent<Player>(out Player player))
+        {
+            Debug.Log("playera smo nasli ");
             if (!CheckLineOfSight(player))
             {
                 CheckForLineOfSightCoroutine = StartCoroutine(CheckForLineOfSight(player));
@@ -33,72 +45,56 @@ public class EnemyLineOfSightChecker : MonoBehaviour
         }
     }
 
-    private void OnTriggerExit(Collider other)
+    public void OnTriggerExit(Collider other)
     {
-        Player player;
-        if (other.TryGetComponent<Player>(out player))
+        if (_enemy == null)
         {
-            OnLoseSight?.Invoke(player);
+            Debug.LogError("Enemy context is not set for " + gameObject.name);
+            return;
+        }
+
+        if (other.TryGetComponent<Player>(out Player player))
+        {
+            _enemy.SetAggroedStatus(false);
             if (CheckForLineOfSightCoroutine != null)
             {
                 StopCoroutine(CheckForLineOfSightCoroutine);
+                CheckForLineOfSightCoroutine = null;
             }
         }
     }
 
-    private bool CheckLineOfSight(Player player)
+    public bool CheckLineOfSight(Player player)
     {
-        Vector3 Direction = (player.transform.position - transform.position).normalized;
-        float DotProduct = Vector3.Dot(transform.forward, Direction);
-        float FoV = Mathf.Cos(FieldOfView);
-        //Debug.Log("DotProduct: "+ DotProduct!);
-        //Debug.Log("cosinus "+ Mathf.Cos(FieldOfView));
-        /* if (1 == 1)
-         {
-             RaycastHit Hit;
-             Debug.Log("not entered yet  " + Physics.Raycast(transform.position, Direction, out Hit, Collider.radius, LineOfSightLayers));
-             if (Physics.Raycast(transform.position, Direction, out Hit, Collider.radius, LineOfSightLayers))
-             {
-                 Debug.Log("Enter! "+ Physics.Raycast(transform.position, Direction, out Hit, Collider.radius, LineOfSightLayers));
-                 if (Hit.transform.GetComponent<Player>() != null)
-                 {
-                     OnGainSight?.Invoke(player);
-                     return true;
-                 }
-             }
-         }
-         Debug.Log("exit!");
-         return false;
-        */
+        Vector3 directionToPlayer = (player.transform.position - transform.position).normalized;
+        float distanceToPlayer = Vector3.Distance(transform.position, player.transform.position);
+
         RaycastHit hit;
-        Vector3 direction = (player.transform.position - transform.position).normalized;
+        Debug.DrawRay(transform.position, directionToPlayer * distanceToPlayer, Color.red, 1.0f);
 
-        Debug.Log("Checking line of sight...");
-        bool isHit = Physics.Raycast(transform.position, direction, out hit, Collider.radius, LineOfSightLayers);
-        Debug.Log("Raycast result: " + isHit);
+        bool isHit = Physics.Raycast(transform.position, directionToPlayer, out hit, distanceToPlayer, LineOfSightLayers);
 
-        if (isHit)
+        if (isHit && hit.transform.GetComponent<Player>() != null)
         {
-            Debug.Log("Hit something: " + hit.transform.name);
-            if (hit.transform.GetComponent<Player>() != null)
-            {
-                Debug.Log("Player in sight!");
-                OnGainSight?.Invoke(player);
-                return true;
-            }
+            _enemy.SetAggroedStatus(true); 
+            return true;
         }
 
-        Debug.Log("Player not in sight.");
         return false;
     }
 
     private IEnumerator CheckForLineOfSight(Player player)
     {
-        WaitForSeconds Wait = new WaitForSeconds(0.1f);
+        WaitForSeconds wait = new WaitForSeconds(0.1f);
 
-        while (!CheckLineOfSight(player))
+        while (true)
         {
-            yield return Wait;
+            if (CheckLineOfSight(player))
+            {
+                CheckForLineOfSightCoroutine = null;
+                yield break;
+            }
+            yield return wait;
         }
     }
 }

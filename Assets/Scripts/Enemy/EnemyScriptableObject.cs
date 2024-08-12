@@ -54,7 +54,7 @@ public class EnemyScriptableObject : ScriptableObject
         enemy.Agent.stoppingDistance = StoppingDistance;
 
         enemy.Movement.UpdateRate = AIUpdateInterval;
-        enemy.Movement.DefaultState = DefaultState;
+        //enemy.Movement.DefaultState = DefaultState;
         enemy.Movement.IdleMovespeedMultiplier = IdleMovespeedMultiplier;
         enemy.Movement.IdleLocationRadius = IdleLocationRadius;
         enemy.Movement.Waypoints = new Vector3[Waypoints];

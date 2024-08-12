@@ -8,11 +8,24 @@ public class AttackRadius : MonoBehaviour
     public SphereCollider Collider;
     private List<IDamageable> Damageables = new List<IDamageable>();
     public int Damage = 10;
-    public float AttackDelay = 0.5f;
+    public float AttackDelay= 1.0f; // Cooldown in seconds
+    private float lastAttackTime = 0f;
     public delegate void AttackEvent(IDamageable Target);
     public AttackEvent OnAttack;
-    private Coroutine AttackCoroutine;
+    private Enemy _enemy;
 
+    public void SetEnemyContext(Enemy enemy)
+    {
+        _enemy = enemy;
+        if (_enemy != null)
+        {
+            Debug.Log("kontekst je u lineu za attack ");
+        }
+        else
+        {
+            Debug.LogError("LineOfSightChecker is not assigned on " + gameObject.name);
+        }
+    }
     private void Awake()
     {
         Collider = GetComponent<SphereCollider>();
@@ -23,12 +36,8 @@ public class AttackRadius : MonoBehaviour
         IDamageable damageable = other.GetComponent<IDamageable>();
         if (damageable != null)
         {
-            Damageables.Add(damageable);
-
-            if (AttackCoroutine == null)
-            {
-                AttackCoroutine = StartCoroutine(Attack());
-            }
+                _enemy.SetStrikingDistanceBool(true);
+                Damageables.Add(damageable);
         }
     }
 
@@ -38,52 +47,46 @@ public class AttackRadius : MonoBehaviour
         if (damageable != null)
         {
             Damageables.Remove(damageable);
-            if (Damageables.Count == 0)
+            if (Damageables.Count == 0 && _enemy != null)
             {
-                StopCoroutine(AttackCoroutine);
-                AttackCoroutine = null;
+                _enemy.SetStrikingDistanceBool(false);
             }
+        }
+        else
+        {
+            Debug.LogWarning("Null damageable detected in OnTriggerExit for " + other.name);
         }
     }
 
-    private IEnumerator Attack()
+    public void Attack()
     {
-        WaitForSeconds Wait = new WaitForSeconds(AttackDelay);
-
-        yield return Wait;
+        if (Time.time - lastAttackTime < AttackDelay) return; // Check if cooldown has elapsed
+        lastAttackTime = Time.time; // Update last attack time
 
         IDamageable closestDamageable = null;
         float closestDistance = float.MaxValue;
 
-        while (Damageables.Count > 0)
+        foreach (var damageable in Damageables)
         {
-            for (int i = 0; i < Damageables.Count; i++)
+            if (damageable == null) continue;
+
+            Transform damageableTransform = damageable.GetTransform();
+            float distance = Vector3.Distance(transform.position, damageableTransform.position);
+
+            if (distance < closestDistance)
             {
-                Transform damageableTransform = Damageables[i].GetTransform();
-                float distance = Vector3.Distance(transform.position, damageableTransform.position);
-
-                if (distance < closestDistance)
-                {
-                    closestDistance = distance;
-                    closestDamageable = Damageables[i];
-                }
+                closestDistance = distance;
+                closestDamageable = damageable;
             }
-
-            if (closestDamageable != null)
-            {
-                OnAttack?.Invoke(closestDamageable);
-                closestDamageable.TakeDamage(Damage);
-            }
-
-            closestDamageable = null;
-            closestDistance = float.MaxValue;
-
-            yield return Wait;
-
-            Damageables.RemoveAll(DisabledDamageables);
         }
 
-        AttackCoroutine = null;
+        if (closestDamageable != null)
+        {
+            OnAttack?.Invoke(closestDamageable);
+            closestDamageable.TakeDamage(Damage);
+        }
+
+        Damageables.RemoveAll(DisabledDamageables);
     }
 
     private bool DisabledDamageables(IDamageable Damageable)

@@ -2487,7 +2487,6 @@ MonoBehaviour:
   LineOfSightChecker: {fileID: 394998951758984919}
   UpdateRate: 0.1
   Animator: {fileID: 7079343999789222284}
-  DefaultState: 2
   IdleLocationRadius: 4
   IdleMovespeedMultiplier: 0.5
   Waypoints:
@@ -2533,9 +2532,8 @@ MonoBehaviour:
   Animator: {fileID: 7079343999789222284}
   Movement: {fileID: 3310765338123296126}
   Agent: {fileID: 7617240656852073222}
-  EnemyScriptableObject: {fileID: 11400000, guid: 7a752106374fcd94bbfb422076b71275,
-    type: 2}
   Health: 150
+  LineOfSightChecker: {fileID: 394998951758984919}
 --- !u!54 &8421843607489183994
 Rigidbody:
   m_ObjectHideFlags: 0

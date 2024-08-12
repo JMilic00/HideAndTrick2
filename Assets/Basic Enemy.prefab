@@ -85,6 +85,7 @@ GameObject:
   - component: {fileID: 474655934517441047}
   - component: {fileID: 6621260285416659450}
   - component: {fileID: 2000418737880650122}
+  - component: {fileID: 6378509184640231321}
   m_Layer: 8
   m_Name: Basic Enemy
   m_TagString: Untagged
@@ -126,7 +127,6 @@ MonoBehaviour:
   LineOfSightChecker: {fileID: 6692079183096512824}
   UpdateRate: 0.1
   Animator: {fileID: 8781750894565706196}
-  DefaultState: 2
   IdleLocationRadius: 6
   IdleMovespeedMultiplier: 0.5
   Waypoints:
@@ -224,6 +224,27 @@ CapsuleCollider:
   m_Height: 2
   m_Direction: 1
   m_Center: {x: 0, y: 1, z: 0}
+--- !u!135 &6378509184640231321
+SphereCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7459767304145594318}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Radius: 0.5
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &8617597425131445846
 GameObject:
   m_ObjectHideFlags: 0

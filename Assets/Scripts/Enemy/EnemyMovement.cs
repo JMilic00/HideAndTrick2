@@ -10,62 +10,35 @@ public class EnemyMovement : MonoBehaviour
     public NavMeshTriangulation Triangulation;
     public float UpdateRate = 0.1f;
     private NavMeshAgent Agent;
+    private Enemy _enemy;
 
     [SerializeField]
     private Animator Animator = null;
 
     private const string IsWalking = "IsWalking";
 
-    public EnemyState DefaultState;
-    private EnemyState _state;
-
-    public EnemyState State
-    {
-        get
-        {
-            return _state;
-        }
-        set
-        {
-            OnStateChange?.Invoke(_state, value);
-            _state = value;
-        }
-    }
-
-    public delegate void StateChangeEvent(EnemyState oldState, EnemyState newState);
-    public StateChangeEvent OnStateChange;
-
     public float IdleLocationRadius = 4f;
     public float IdleMovespeedMultiplier = 0.5f;
     public Vector3[] Waypoints = new Vector3[4];
     [SerializeField]
     private int WaypointIndex = 0;
-
-    private Coroutine FollowCoroutine;
-
+    public void SetEnemyContext(Enemy enemy)
+    {
+        _enemy = enemy;
+        if (LineOfSightChecker != null && _enemy != null)
+        {
+            Debug.Log("usao u lineofsightchecker ");
+            LineOfSightChecker.SetEnemyContext(_enemy);
+        }
+        else
+        {
+            Debug.LogError("LineOfSightChecker is not assigned on " + gameObject.name);
+        }
+    }
     private void Awake()
     {
+
         Agent = GetComponent<NavMeshAgent>();
-
-        LineOfSightChecker.OnGainSight += HandleGainSight;
-        LineOfSightChecker.OnLoseSight += HandleLoseSight;
-
-        OnStateChange += HandleStateChange;
-    }
-    private void HandleGainSight(Player player)
-    {
-        State = EnemyState.Chase;
-    }
-
-    private void HandleLoseSight(Player player)
-    {
-        State = DefaultState;
-    }
-
-
-    private void OnDisable()
-    {
-        _state = DefaultState;
     }
 
     public void Spawn()
@@ -82,8 +55,6 @@ public class EnemyMovement : MonoBehaviour
                 Debug.LogError("Unable to find position for navmesh near Triangulation vertex!");
             }
         }
-
-        OnStateChange?.Invoke(EnemyState.Spawn, DefaultState);
     }
 
     private void Update()
@@ -91,46 +62,15 @@ public class EnemyMovement : MonoBehaviour
         Animator.SetBool(IsWalking, Agent.velocity.magnitude > 0.1f);
     }
 
-    private void HandleStateChange(EnemyState oldState, EnemyState newState)
+    public void DoIdleMotion()
     {
-        if (oldState != newState)
-        {
-            if (FollowCoroutine != null)
-            {
-                StopCoroutine(FollowCoroutine);
-            }
-
-            if (oldState == EnemyState.Idle)
-            {
-                Agent.speed /= IdleMovespeedMultiplier;
-            }
-
-            switch (newState)
-            {
-                case EnemyState.Idle:
-                    FollowCoroutine = StartCoroutine(DoIdleMotion());
-                    break;
-                case EnemyState.Patrol:
-                    FollowCoroutine = StartCoroutine(DoPatrolMotion());
-                    break;
-                case EnemyState.Chase:
-                    FollowCoroutine = StartCoroutine(FollowTarget());
-                    break;
-            }
-        }
-    }
-
-    private IEnumerator DoIdleMotion()
-    {
-        WaitForSeconds Wait = new WaitForSeconds(UpdateRate);
 
         Agent.speed *= IdleMovespeedMultiplier;
 
-        while (true)
-        {
             if (!Agent.enabled || !Agent.isOnNavMesh)
             {
-                yield return Wait;
+                Debug.Log("Agent not found");
+                return; 
             }
             else if (Agent.remainingDistance <= Agent.stoppingDistance)
             {
@@ -140,22 +80,22 @@ public class EnemyMovement : MonoBehaviour
                 if (NavMesh.SamplePosition(Agent.transform.position + new Vector3(point.x, 0, point.y), out hit, 2f, Agent.areaMask))
                 {
                     Agent.SetDestination(hit.position);
+                    return;
                 }
+                return;
             }
-
-            yield return Wait;
-        }
+        
     }
 
-    private IEnumerator DoPatrolMotion()
+    public void DoPatrolMotion()
     {
-        WaitForSeconds Wait = new WaitForSeconds(UpdateRate);
-
-        yield return new WaitUntil(() => Agent.enabled && Agent.isOnNavMesh);
+        if (!Agent.enabled || !Agent.isOnNavMesh)
+        {
+            Debug.Log("Agent not found");
+            return;
+        }
         Agent.SetDestination(Waypoints[WaypointIndex]);
 
-        while (true)
-        {
             if (Agent.isOnNavMesh && Agent.enabled && Agent.remainingDistance <= Agent.stoppingDistance)
             {
                 WaypointIndex++;
@@ -167,22 +107,16 @@ public class EnemyMovement : MonoBehaviour
 
                 Agent.SetDestination(Waypoints[WaypointIndex]);
             }
-
-            yield return Wait;
-        }
+            return;
+        
     }
 
-    private IEnumerator FollowTarget()
+    public void FollowTarget()
     {
-        WaitForSeconds Wait = new WaitForSeconds(UpdateRate);
-
-        while (true)
+       
+        if (Agent.enabled)
         {
-            if (Agent.enabled)
-            {
-                Agent.SetDestination(Player.transform.position);
-            }
-            yield return Wait;
+            Agent.SetDestination(Player.transform.position);
         }
     }
 
