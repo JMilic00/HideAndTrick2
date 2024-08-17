@@ -12,7 +12,8 @@ public class Enemy : PoolableObject, IDamageable, ITriggerCheckable
     public int Health = 100;
 
     private Coroutine LookCoroutine;
-    private const string ATTACK_TRIGGER = "Attack";
+    public const string ATTACK_TRIGGER = "Attack";
+    public const string ATTACK_SHIELD_TRIGGER = "ShieldAttack";
 
     public EnemyStateMachine StateMachine { get; set; }
     public EnemyPatrolState PatrolState { get; set; }
@@ -28,7 +29,7 @@ public class Enemy : PoolableObject, IDamageable, ITriggerCheckable
             Debug.LogError("usao u movement ");
             Movement.SetEnemyContext(this);
         }
-        if(AttackRadius != null && Movement != null)
+        if (AttackRadius != null && Movement != null)
         {
             Debug.LogError("EnemyMovement or AttackRadius is not assigned on " + gameObject.name);
         }
@@ -66,9 +67,13 @@ public class Enemy : PoolableObject, IDamageable, ITriggerCheckable
         StateMachine.CurrentEnemyState.UpdatePhysics();
     }
 
-    private void OnAttack(IDamageable Target)
+    private void OnAttack(IDamageable Target, string attackTrigger)
     {
-        Animator.SetTrigger(ATTACK_TRIGGER);
+        if (attackTrigger == ATTACK_SHIELD_TRIGGER)
+        {
+            Debug.Log("SHIELD UDARA");
+        }
+        Animator.SetTrigger(attackTrigger);
 
         if (LookCoroutine != null)
         {

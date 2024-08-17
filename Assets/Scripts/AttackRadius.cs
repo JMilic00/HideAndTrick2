@@ -8,9 +8,9 @@ public class AttackRadius : MonoBehaviour
     public SphereCollider Collider;
     private List<IDamageable> Damageables = new List<IDamageable>();
     public int Damage = 10;
-    public float AttackDelay= 1.0f; // Cooldown in seconds
+    public float AttackDelay = 1.0f; // Cooldown in seconds
     private float lastAttackTime = 0f;
-    public delegate void AttackEvent(IDamageable Target);
+    public delegate void AttackEvent(IDamageable Target, string attackTrigger);
     public AttackEvent OnAttack;
     private Enemy _enemy;
 
@@ -36,8 +36,8 @@ public class AttackRadius : MonoBehaviour
         IDamageable damageable = other.GetComponent<IDamageable>();
         if (damageable != null)
         {
-                _enemy.SetStrikingDistanceBool(true);
-                Damageables.Add(damageable);
+            _enemy.SetStrikingDistanceBool(true);
+            Damageables.Add(damageable);
         }
     }
 
@@ -58,7 +58,7 @@ public class AttackRadius : MonoBehaviour
         }
     }
 
-    public void Attack()
+    public void Attack(string attackTrigger)
     {
         if (Time.time - lastAttackTime < AttackDelay) return; // Check if cooldown has elapsed
         lastAttackTime = Time.time; // Update last attack time
@@ -82,7 +82,7 @@ public class AttackRadius : MonoBehaviour
 
         if (closestDamageable != null)
         {
-            OnAttack?.Invoke(closestDamageable);
+            OnAttack?.Invoke(closestDamageable, attackTrigger);
             closestDamageable.TakeDamage(Damage);
         }
 

@@ -19,9 +19,9 @@ public class Player : MonoBehaviour, IDamageable
         AttackRadius.OnAttack += OnAttack;
     }
 
-    private void OnAttack(IDamageable Target)
+    private void OnAttack(IDamageable Target, string attackTrigger)
     {
-        Animator.SetTrigger(ATTACK_TRIGGER);
+        Animator.SetTrigger(attackTrigger);
 
         if (LookCoroutine != null)
         {
