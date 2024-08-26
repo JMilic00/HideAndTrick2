@@ -173,7 +173,9 @@ MonoBehaviour:
   Animator: {fileID: 8781750894565706196}
   Movement: {fileID: 3896697510646242598}
   Agent: {fileID: 8238220820428667742}
-  Health: 100
+  camera: {fileID: 0}
+  health: 100
+  maxHealth: 100
 --- !u!54 &6621260285416659450
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -328,15 +330,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 400000, guid: 21ca816de6f3abd4cbee2c0462c8a186, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -0.116
+      value: -0.102
       objectReference: {fileID: 0}
     - target: {fileID: 400000, guid: 21ca816de6f3abd4cbee2c0462c8a186, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -0.132
+      value: -0.108
       objectReference: {fileID: 0}
     - target: {fileID: 400000, guid: 21ca816de6f3abd4cbee2c0462c8a186, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 0.042
+      value: 0.021
       objectReference: {fileID: 0}
     - target: {fileID: 400000, guid: 21ca816de6f3abd4cbee2c0462c8a186, type: 3}
       propertyPath: m_LocalRotation.w

@@ -2532,8 +2532,9 @@ MonoBehaviour:
   Animator: {fileID: 7079343999789222284}
   Movement: {fileID: 3310765338123296126}
   Agent: {fileID: 7617240656852073222}
-  Health: 150
-  LineOfSightChecker: {fileID: 394998951758984919}
+  camera: {fileID: 0}
+  health: 100
+  maxHealth: 100
 --- !u!54 &8421843607489183994
 Rigidbody:
   m_ObjectHideFlags: 0

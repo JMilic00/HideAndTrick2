@@ -12,7 +12,7 @@ public class EnemyScriptableObject : ScriptableObject
     public AttackScriptableObject AttackConfiguration;
 
     // Enemy Stats
-    public int Health = 100;
+    public int health = 100;
 
 
     // Movement Stats
@@ -62,7 +62,7 @@ public class EnemyScriptableObject : ScriptableObject
         enemy.Movement.LineOfSightChecker.Collider.radius = LineOfSightRange;
         enemy.Movement.LineOfSightChecker.LineOfSightLayers = AttackConfiguration.LineOfSightLayers;
 
-        enemy.Health = Health;
+        enemy.health = health;
 
         AttackConfiguration.SetupEnemy(enemy);
     }

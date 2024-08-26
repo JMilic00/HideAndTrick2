@@ -2,6 +2,8 @@ using System.Collections;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.AI;
+using Pathfinding.BehaviourTrees;
+using JetBrains.Annotations;
 
 public class Enemy : PoolableObject, IDamageable, ITriggerCheckable
 {
@@ -9,11 +11,13 @@ public class Enemy : PoolableObject, IDamageable, ITriggerCheckable
     public Animator Animator;
     public EnemyMovement Movement;
     public NavMeshAgent Agent;
-    public int Health = 100;
+    public int health = 100;
+    public int maxHealth;
 
     private Coroutine LookCoroutine;
     public const string ATTACK_TRIGGER = "Attack";
     public const string ATTACK_SHIELD_TRIGGER = "ShieldAttack";
+
 
     public EnemyStateMachine StateMachine { get; set; }
     public EnemyPatrolState PatrolState { get; set; }
@@ -22,27 +26,30 @@ public class Enemy : PoolableObject, IDamageable, ITriggerCheckable
     public bool IsAggroed { get; set; }
     public bool IsWithinStrikingDistance { get; set; }
 
+
+    BehaviourTree tree;
+
     private void Awake()
     {
         if (Movement != null)
         {
-            Debug.LogError("usao u movement ");
+            //Debug.Log("usao u movement ");
             Movement.SetEnemyContext(this);
         }
-        if (AttackRadius != null && Movement != null)
+        if (AttackRadius == null && Movement == null)
         {
-            Debug.LogError("EnemyMovement or AttackRadius is not assigned on " + gameObject.name);
+            //Debug.Log("EnemyMovement or AttackRadius is not assigned on " + gameObject.name);
         }
 
         if (AttackRadius != null)
         {
-            Debug.LogError("usao u attack ");
+           // Debug.Log("usao u attack ");
             AttackRadius.SetEnemyContext(this);
             AttackRadius.OnAttack += OnAttack;
         }
         else
         {
-            Debug.LogError("AttackRadius is not assigned on " + gameObject.name);
+            //Debug.Log("AttackRadius is not assigned on " + gameObject.name);
         }
 
         StateMachine = new EnemyStateMachine();
@@ -50,21 +57,55 @@ public class Enemy : PoolableObject, IDamageable, ITriggerCheckable
         PatrolState = new EnemyPatrolState(this, StateMachine);
         ChaseState = new EnemyChaseState(this, StateMachine);
         AttackState = new EnemyAttackState(this, StateMachine);
+
+
+        tree = new BehaviourTree("enemy");
+
+        // Selector node to choose between patrol, chase, and attack
+        BehaviourSelector enemyStateSelector = new BehaviourSelector("enemyStateSelector");
+
+        // Patrol sequence
+        Leaf patrol = new Leaf("patrol", new PatrolStrategy(this));
+
+        // Chase sequence
+        Leaf isAggroed = new Leaf("isAggroed", new Condition(() => this.IsAggroed));
+        Leaf chase = new Leaf("chase", new ActionStrategy(() => Movement.FollowTarget()));
+        BehaviourSequence chaseSequence = new BehaviourSequence("chaseSequence");
+        chaseSequence.AddChild(isAggroed);
+        chaseSequence.AddChild(chase);
+
+        // Attack sequence
+        Leaf isWithinStrikingDistance = new Leaf("isWithinStrikingDistance", new Condition(() => this.IsWithinStrikingDistance));
+        Leaf attack = new Leaf("attack", new ActionStrategy(() => AttackRadius.Attack(ATTACK_TRIGGER)));
+        BehaviourSequence attackSequence = new BehaviourSequence("attackSequence");
+        attackSequence.AddChild(isWithinStrikingDistance);
+        attackSequence.AddChild(attack);
+
+        // Add sequences to selector
+        enemyStateSelector.AddChild(attackSequence);
+        enemyStateSelector.AddChild(chaseSequence);
+        enemyStateSelector.AddChild(patrol);
+
+        // Add selector to tree
+        tree.AddChild(enemyStateSelector);
     }
 
     private void Start()
     {
-        StateMachine.initialize(PatrolState);
+
+        //StateMachine.initialize(PatrolState);
     }
 
     private void Update()
     {
-        StateMachine.CurrentEnemyState.UpdateLogic();
+        tree.Process();
     }
 
     private void FixedUpdate()
     {
+        /*
         StateMachine.CurrentEnemyState.UpdatePhysics();
+        */
     }
 
     private void OnAttack(IDamageable Target, string attackTrigger)
@@ -109,10 +150,9 @@ public class Enemy : PoolableObject, IDamageable, ITriggerCheckable
 
     public void TakeDamage(int Damage)
     {
-        Health -= Damage;
-        Debug.Log("ENEMY TOOK DAMAGE: " + Damage + ", REMAINING HEALTH: " + Health);
-
-        if (Health <= 0)
+        health -= Damage;
+        Debug.Log("ENEMY TOOK DAMAGE: " + Damage + ", REMAINING HEALTH: " + health);
+        if (health <= 0)
         {
             gameObject.SetActive(false);
         }
@@ -125,11 +165,21 @@ public class Enemy : PoolableObject, IDamageable, ITriggerCheckable
 
     public void SetAggroedStatus(bool isAggroed)
     {
-        IsAggroed = isAggroed;
+         IsAggroed = isAggroed;
     }
 
     public void SetStrikingDistanceBool(bool isStrikingDistance)
     {
-        IsWithinStrikingDistance = isStrikingDistance;
+         IsWithinStrikingDistance = isStrikingDistance;
+    }
+
+    public bool AggroedStatus()
+    {
+        return IsAggroed;
+    }
+
+    public bool StrikingDistanceBool()
+    {
+        return IsWithinStrikingDistance;
     }
 }

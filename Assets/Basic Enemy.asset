@@ -15,12 +15,12 @@ MonoBehaviour:
   Prefab: {fileID: 474655934517441047, guid: 50c66568b826fa04d909bcb38465e28f, type: 3}
   AttackConfiguration: {fileID: 11400000, guid: 91f19e1ddb8d350439212fc53038dfac,
     type: 2}
-  Health: 300
+  health: 100
   DefaultState: 2
   IdleLocationRadius: 4
   IdleMovespeedMultiplier: 0.5
-  Waypoints: 4
-  LineOfSightRange: 6
+  Waypoints: 7
+  LineOfSightRange: 10
   FieldOfView: 120
   AIUpdateInterval: 0.1
   Acceleration: 8
@@ -31,5 +31,5 @@ MonoBehaviour:
   Height: 2
   ObstacleAvoidanceType: 1
   Radius: 0.5
-  Speed: 3
+  Speed: 5
   StoppingDistance: 0.5

@@ -15,7 +15,7 @@ public class EnemyLineOfSightChecker : MonoBehaviour
         _enemy = enemy;
         if ( _enemy != null)
         {
-            Debug.Log("kontekst je u lineu ");
+            Debug.Log("kontekst je u lineu za movement ");
         }
         else
         {
@@ -76,7 +76,8 @@ public class EnemyLineOfSightChecker : MonoBehaviour
 
         if (isHit && hit.transform.GetComponent<Player>() != null)
         {
-            _enemy.SetAggroedStatus(true); 
+            _enemy.SetAggroedStatus(true);
+            //Debug.Log(_enemy.IsAggroed);
             return true;
         }
 

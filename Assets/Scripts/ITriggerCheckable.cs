@@ -11,4 +11,8 @@ public interface ITriggerCheckable
     void SetAggroedStatus(bool isAggroed);
 
     void SetStrikingDistanceBool(bool isStrikingDistance);
+
+    bool AggroedStatus();
+
+    bool StrikingDistanceBool();
 }

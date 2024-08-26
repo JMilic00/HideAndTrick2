@@ -21,7 +21,7 @@ public class EnemyMovement : MonoBehaviour
     public float IdleMovespeedMultiplier = 0.5f;
     public Vector3[] Waypoints = new Vector3[4];
     [SerializeField]
-    private int WaypointIndex = 0;
+    public int WaypointIndex = 0;
     public void SetEnemyContext(Enemy enemy)
     {
         _enemy = enemy;
@@ -99,14 +99,16 @@ public class EnemyMovement : MonoBehaviour
             if (Agent.isOnNavMesh && Agent.enabled && Agent.remainingDistance <= Agent.stoppingDistance)
             {
                 WaypointIndex++;
-
+            
                 if (WaypointIndex >= Waypoints.Length)
                 {
                     WaypointIndex = 0;
+                    return;
                 }
 
                 Agent.SetDestination(Waypoints[WaypointIndex]);
-            }
+                Debug.Log(WaypointIndex);
+        }
             return;
         
     }
