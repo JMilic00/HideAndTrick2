@@ -124,4 +124,57 @@ namespace Pathfinding.BehaviourTrees
             return Status.Failure;
         }
     }
+
+    public class RandomSelector : Node
+    {
+        private readonly System.Random random = new System.Random();
+
+        public RandomSelector(string name) : base(name) { }
+
+        public override Status Process()
+        {
+            if (currentChild == 0) // Shuffle only once before we start processing
+            {
+                ShuffleChildren();
+            }
+
+            while (currentChild < children.Count)
+            {
+                var status = children[currentChild].Process();
+                switch (status)
+                {
+                    case Status.Running:
+                        return Status.Running;
+                    case Status.Success:
+                        Reset();
+                        return Status.Success;
+                    default:
+                        currentChild++;
+                        break;
+                }
+            }
+
+            Reset();
+            return Status.Failure;
+        }
+
+        private void ShuffleChildren()
+        {
+            int n = children.Count;
+            while (n > 1)
+            {
+                n--;
+                int k = random.Next(n + 1);
+                Node value = children[k];
+                children[k] = children[n];
+                children[n] = value;
+            }
+        }
+
+        public override void Reset()
+        {
+            base.Reset();
+            currentChild = 0;
+        }
+    }
 }

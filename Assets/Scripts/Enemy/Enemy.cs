@@ -76,10 +76,15 @@ public class Enemy : PoolableObject, IDamageable, ITriggerCheckable
 
         // Attack sequence
         Leaf isWithinStrikingDistance = new Leaf("isWithinStrikingDistance", new Condition(() => this.IsWithinStrikingDistance));
-        Leaf attack = new Leaf("attack", new ActionStrategy(() => AttackRadius.Attack(ATTACK_TRIGGER)));
+        Leaf attackSword = new Leaf("Swordattack", new ActionStrategy(() => AttackRadius.Attack(ATTACK_TRIGGER)));
+        Leaf attackShield = new Leaf("Shieldattack", new ActionStrategy(() => AttackRadius.Attack(ATTACK_SHIELD_TRIGGER)));
+
         BehaviourSequence attackSequence = new BehaviourSequence("attackSequence");
         attackSequence.AddChild(isWithinStrikingDistance);
-        attackSequence.AddChild(attack);
+        RandomSelector EnemyAttackType = new RandomSelector("EnemyAttackType");
+        EnemyAttackType.AddChild(attackSword);
+        EnemyAttackType.AddChild(attackShield);
+        attackSequence.AddChild(EnemyAttackType);
 
         // Add sequences to selector
         enemyStateSelector.AddChild(attackSequence);
